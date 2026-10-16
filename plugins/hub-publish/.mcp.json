@@ -2,10 +2,7 @@
   "mcpServers": {
     "hub": {
       "type": "http",
-      "url": "https://hub.apimodels.app/mcp",
-      "headers": {
-        "Authorization": "Bearer ${user_config.hub_api_key}"
-      }
+      "url": "https://hub.apimodels.app/mcp/gengrades"
     }
   }
 }

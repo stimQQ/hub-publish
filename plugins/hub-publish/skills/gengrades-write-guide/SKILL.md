@@ -1,13 +1,14 @@
 ---
 name: gengrades-write-guide
-description: 把内容写进 backend-hub 并发布到产品站点（GenGrades 等用 hub 内容模块的网站）。新建或更新工具页、模型页、对比页、教程和资讯文章，给条目加中文等其他语言版本，上传封面和截图，按这个产品存在 hub 里的写作规则和 GEO 评分写，达到发布门槛后发布、定时发布或下线。用户说「写一篇 X 的评测发到站上」「把这篇同步进数据库」「给这页加中文版」「更新某页的价格」「上传封面」「把某篇下线」时使用。需要插件配置里填好那个产品的 hub key。
+description: 把内容写进 backend-hub 并发布到产品站点（GenGrades 等用 hub 内容模块的网站）。新建或更新工具页、模型页、对比页、教程和资讯文章，给条目加中文等其他语言版本，上传封面和截图，按这个产品存在 hub 里的写作规则和 GEO 评分写，达到门槛后提交审核（或在有发布权限时发布、定时发布、下线）。用户说「写一篇 X 的评测发到站上」「把这篇同步进数据库」「给这页加中文版」「更新某页的价格」「上传封面」「把某篇下线」时使用。第一次调用工具时会打开浏览器，用 GenGrades 的 Google 账号登录授权。
 ---
 
 # 写内容并发布到 hub
 
 hub 是多个产品共用的后端，每个产品（GenGrades 等）是 hub 里的一个项目，网站从 hub 的内容接口读条目渲染页面。
 这个 skill 用插件自带的 MCP（服务名 `hub`，工具全名形如 `mcp__plugin_hub-publish_hub__content_guide`）读规则、写草稿、
-发布。插件里填的 key 决定写进哪个产品、能不能发布。
+提交审核。登录用的是 GenGrades 网站的 Google 账号，登录的人是**投稿人**：能写草稿、加译本、上传图片、提交审核，
+不能发布；GenGrades 在后台审核后发布或退回。
 
 本文件是所有产品通用的写法。**每个产品自己的规则在 hub 里（`content_guide` 返回的 `writing_guide`），两者冲突时以
 writing_guide 为准。**
@@ -16,7 +17,7 @@ writing_guide 为准。**
 
 1. 调 `content_guide`（不带参数）。看：`project`（产品、支持的语言）、`writing_guide`、`collections`（每类的必备块
    `required_blocks`、发布门槛 `min_lint_score`、页面地址模板）、`lint.rules`（评分规则）、`uploads`（能传什么图）、
-   `credential.scopes`（这把 key 能不能发布）。
+   `credential`（`kind` 是 contributor 还是 server_key、`can_publish` 能不能直接发布）。
 2. 按 writing_guide 决定写进哪个 collection。它没说清、或者用户的要求和它对不上时，先问用户，不要自己猜。
 3. 调 `content_guide(collection="…")` 拿展开后的 schema、答案块字段（`blocks`）和关联字段（`relations`）。
 4. 查重：`list_entries(collection=…, q=名字)`。已经有这个主题的条目就更新它，不要新建第二条。
@@ -66,17 +67,18 @@ writing_guide 为准。**
 3. 报 `content.invalid_data` 时，`params` 里有逐个字段的错误路径，照着改。
 4. 关联字段（`relations` 里列出的）填目标条目的 **id**，用 `list_entries` 查，不是填名字。目标不存在时，
    按 writing_guide 判断能不能新建（比如厂商条目），拿不准就问。
-5. 改已有条目：只动几个字段用 `update_entry(entry_id, fields={…})`（值为 null 删掉这个字段），整份重写用 `data`。
+5. 投稿人只能改自己写的、还没发布的条目；别人的条目和已上线的页面改不了，发现错误就在汇报里写清楚哪里错、出处是什么。
+6. 改已有条目：只动几个字段用 `update_entry(entry_id, fields={…})`（值为 null 删掉这个字段），整份重写用 `data`。
    先 `get_entry` 读当前内容和 `revision`，保存时带 `expected_revision`，别人刚改过会返回 `content.conflict`，
    这时重新读再改，不要覆盖。
-6. 已发布的条目改完立即生效，站点会自动刷新。
+7. 有发布权限时，已发布的条目改完立即生效，站点会自动刷新。
 
 ## 5. 其他语言版本
 
 1. 默认语言版本定稿后，`translate_entry(entry_id, locale, data, seo)` 一步建好这个语言的草稿。
 2. 数据结构和默认语言版本一致；事实、数字、来源、日期、关联 id、文件 id 都不变，只换文字。不多也不少。
 3. 这个语言已经有版本时会返回 `content.translation_exists`：用 `list_entries(locale=…)` 找到它，用 `update_entry` 改。
-4. 每个语言单独过 lint、单独发布。
+4. 每个语言单独过 lint、单独提交审核（或发布）。
 
 ## 6. 图片（封面、截图、分享图）
 
@@ -90,28 +92,34 @@ writing_guide 为准。**
   3. `complete_upload(file_id)`。
   4. `get_file(file_id)` 直到 `status` 是 `ready`（处理是异步的，一般几秒），再把 `file_id` 填进条目。
 
-## 7. 发布
+## 7. 提交审核和发布
 
-- 发布 = 线上可见、站点刷新、推送给搜索引擎。**用户没说发布，就只存草稿**，告诉用户条目 id 和发布后的地址。
+- **投稿人（`credential.can_publish` 是 false）**：写完、分数达到门槛后调用 `submit_for_review(entry_id)`，条目变成待审核。
+  GenGrades 在后台审核：通过就发布；不通过会退回成草稿，原因在 `get_entry` 的 `review_note` 里，改完再提交。
+  投稿人同时最多有 30 条没发布的条目。
+- 用户没说提交就只存草稿，告诉用户条目 id 和发布后的地址。
+- 下面这些要 `content:publish`（项目的服务端密钥才有，投稿人没有）。发布 = 线上可见、站点刷新、推送给搜索引擎：
 - `publish_entry(entry_id)`：分数低于门槛会返回 `content.lint_below_threshold`，`params.missing` 是缺的项。
 - `schedule_entry(entry_id, publish_at)`：带时区的未来时间，如 `2026-11-01T09:00:00+08:00`。
 - `unpublish_entry(entry_id)`：回到草稿，内容和修订都保留。归档、删除、改内容类型结构不在 MCP 里，要在 hub 后台做。
-- 返回 `auth.scope_missing` 且缺 `content:publish`：这把 key 只能写草稿，请用户在 hub 后台发布。
+- 投稿人调用这些会返回 `auth.scope_missing`，改用 `submit_for_review`。
 
 ## 8. 汇报
 
-- 说清：条目 id、每个语言的状态（草稿 / 已发布 / 定时）、页面地址、lint 分数和门槛、还缺什么、用了哪些来源。
-- 只有 `publish_entry` 返回 `status: "published"` 才说「已发布」。
+- 说清：条目 id、每个语言的状态（草稿 / 待审核 / 已发布 / 定时）、页面地址、lint 分数和门槛、还缺什么、用了哪些来源。
+- 提交审核后说「已提交审核，GenGrades 审核通过后上线」，不要说「已发布」。只有 `publish_entry` 返回 `status: "published"` 才说「已发布」。
 - 网站有缓存，发布后通常几分钟内可见。不要反复请求线上网站去确认（可能触发防火墙），需要的话只看一次。
 
 ## 错误码
 
 | code | 意思 | 怎么办 |
 |---|---|---|
-| 401 `auth.invalid_credentials` | key 没填、填错或已作废 | 请用户在 `/plugin` 里重新配置 hub-publish 的 key |
-| `content.server_key_required` | 用的不是项目的服务端密钥 | 请用户在 hub 后台为这个项目新建服务端密钥 |
+| 401 `auth.invalid_credentials` | 还没登录、授权过期或被撤销 | 请用户在 `/mcp` 里选 `plugin:hub-publish:hub` → Authenticate，在浏览器里重新登录 |
+| `auth.scope_missing` | 缺权限（`params.scopes`），投稿人调用发布类工具 | 投稿人改用 `submit_for_review` |
+| `content.not_your_entry` | 投稿人改别人的条目 | 不改，在汇报里说明 |
+| `content.entry_locked` | 投稿人改已发布或定时的条目 | 不改，在汇报里说明哪里错、出处是什么 |
+| `content.too_many_open_entries` | 没发布的条目到了上限 | 等审核后再写新的 |
 | `content.prod_key_required` | 用的是 sandbox key | 写内容要 env 为 prod 的 key |
-| `auth.scope_missing` | key 缺权限（`params.scopes`） | 告诉用户缺哪项 |
 | `content.invalid_data` | 不符合 schema 或规则 | 按 `params` 里的字段路径改 |
 | `content.slug_taken` | slug 已被占用 | 先查是不是同一个主题，是就更新那条 |
 | `content.conflict` | 别人刚改过 | 重新 `get_entry` 再改 |

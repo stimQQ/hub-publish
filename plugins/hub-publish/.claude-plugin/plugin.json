@@ -1,7 +1,7 @@
 {
   "name": "hub-publish",
-  "version": "0.1.1",
-  "description": "把内容写进 backend-hub 并发布到产品站点。包含 gengrades-write-guide 写作技能和 hub 远程 MCP；每个产品的写作规则存在 hub 里，写之前由 MCP 读出。",
+  "version": "0.2.0",
+  "description": "给 GenGrades 写内容：gengrades-write-guide 写作技能 + hub 远程 MCP。用 GenGrades 的 Google 账号登录授权，写好的内容提交审核后上线。",
   "author": {
     "name": "Lewis",
     "url": "https://apimodels.app"
@@ -13,14 +13,5 @@
     "seo",
     "geo",
     "mcp"
-  ],
-  "userConfig": {
-    "hub_api_key": {
-      "type": "string",
-      "title": "Hub API key",
-      "description": "要发布的那个产品在 hub 后台（项目 → API Keys）新建的服务端密钥，env 选 prod，scopes：content:read、content:write、content:publish、files:write、files:read。只给 content:read 和 content:write 就只能写草稿。",
-      "required": true,
-      "sensitive": true
-    }
-  }
+  ]
 }

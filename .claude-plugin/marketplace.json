@@ -3,12 +3,12 @@
   "owner": {
     "name": "Lewis"
   },
-  "description": "把内容写进 backend-hub 并发布到产品站点（GenGrades 等）：写作技能 + hub 远程 MCP。",
+  "description": "给 GenGrades 写内容的 Claude Code 插件：写作技能 + hub 远程 MCP，用 GenGrades 的 Google 账号登录。",
   "plugins": [
     {
       "name": "hub-publish",
       "source": "./plugins/hub-publish",
-      "description": "写作技能 + hub 远程 MCP：读产品的写作规则，写草稿、加其他语言版本、上传图片、发布。"
+      "description": "写作技能 + hub 远程 MCP：读 GenGrades 的写作规则，写草稿、加译本、上传图片、提交审核。"
     }
   ]
 }
