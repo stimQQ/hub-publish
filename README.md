@@ -2,7 +2,7 @@
 
 把内容写进 backend-hub 并发布到产品站点（GenGrades 等）的 Claude Code 插件。装一次就同时有两样东西：
 
-- **publish 写作技能**：通用写法（事实带出处、不编数字、FAQ 先给结论、写清不适合谁、标题和描述长度、多语言）和发布流程。
+- **gengrades-write-guide 写作技能**：通用写法（事实带出处、不编数字、FAQ 先给结论、写清不适合谁、标题和描述长度、多语言）和发布流程。
 - **hub 远程 MCP**（`https://hub.apimodels.app/mcp`）：读产品的写作规则、写草稿、加其他语言版本、上传图片、发布、定时发布、下线。
 
 每个产品自己的规则（比如 GenGrades 的工具页、模型页怎么写）不在插件里，存在 hub 里，写之前由 MCP 读出来。加新产品、改规则都不用发新版插件。
@@ -55,15 +55,15 @@ key 决定写进哪个产品。要给另一个产品发内容，在那个项目�
 
 ## 其他客户端
 
-插件只做了 Claude Code 版。别的 MCP 客户端可以手动接：添加一个 Streamable HTTP 服务，地址 `https://hub.apimodels.app/mcp`，请求头 `Authorization: Bearer <key>`，再把 `plugins/hub-publish/skills/publish` 目录放进那个客户端的技能目录。
+插件只做了 Claude Code 版。别的 MCP 客户端可以手动接：添加一个 Streamable HTTP 服务，地址 `https://hub.apimodels.app/mcp`，请求头 `Authorization: Bearer <key>`，再把 `plugins/hub-publish/skills/gengrades-write-guide` 目录放进那个客户端的技能目录。
 
 ## 目录
 
 ```
-.claude-plugin/marketplace.json        插件市场
+.claude-plugin/marketplace.json                       插件市场
 plugins/hub-publish/
-  .claude-plugin/plugin.json           插件信息和 Hub API key 配置项
-  .mcp.json                            hub 远程 MCP
-  skills/publish/SKILL.md              写作和发布流程
-  skills/publish/references/chinese.md 中文版怎么写
+  .claude-plugin/plugin.json                          插件信息和 Hub API key 配置项
+  .mcp.json                                           hub 远程 MCP
+  skills/gengrades-write-guide/SKILL.md               写作和发布流程
+  skills/gengrades-write-guide/references/chinese.md  中文版怎么写
 ```

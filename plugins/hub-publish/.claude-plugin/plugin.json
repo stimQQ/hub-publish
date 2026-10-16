@@ -1,7 +1,7 @@
 {
   "name": "hub-publish",
-  "version": "0.1.0",
-  "description": "把内容写进 backend-hub 并发布到产品站点。包含 publish 写作技能和 hub 远程 MCP；每个产品的写作规则存在 hub 里，写之前由 MCP 读出。",
+  "version": "0.1.1",
+  "description": "把内容写进 backend-hub 并发布到产品站点。包含 gengrades-write-guide 写作技能和 hub 远程 MCP；每个产品的写作规则存在 hub 里，写之前由 MCP 读出。",
   "author": {
     "name": "Lewis",
     "url": "https://apimodels.app"
